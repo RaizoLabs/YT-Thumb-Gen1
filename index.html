@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>YouTube Thumbnail Generator with Text & Outlines</title>
-  <!-- Load bold display fonts commonly used in YouTube thumbnails -->
+  <title>YouTube Thumbnail Generator & Enhancer</title>
+  <!-- Google Display Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@900&family=Oswald:wght@700&family=Permanent+Marker&family=Rubik+Mono+One&display=swap" rel="stylesheet">
@@ -13,12 +13,12 @@
     body { background: #0f172a; color: #f8fafc; margin: 0; padding: 24px; display: flex; justify-content: center; }
     .container { width: 100%; max-width: 960px; background: #1e293b; border-radius: 12px; padding: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
     h1 { margin-top: 0; font-size: 1.5rem; color: #38bdf8; }
-    .section-title { font-size: 1rem; color: #cbd5e1; margin-top: 16px; margin-bottom: 8px; border-bottom: 1px solid #334155; padding-bottom: 4px; }
+    .section-title { font-size: 1rem; color: #cbd5e1; margin-top: 20px; margin-bottom: 10px; border-bottom: 1px solid #334155; padding-bottom: 6px; font-weight: bold; }
     .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 16px; }
     label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: #94a3b8; }
     select, input[type="text"], input[type="file"], input[type="range"], input[type="color"] { width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #475569; background: #0f172a; color: #f8fafc; height: 38px; }
     input[type="color"] { padding: 2px; cursor: pointer; }
-    .preview-box { border: 2px dashed #475569; border-radius: 8px; padding: 16px; text-align: center; background: #0b1120; margin-bottom: 20px; }
+    .preview-box { border: 2px dashed #475569; border-radius: 8px; padding: 16px; text-align: center; background: #0b1120; margin: 20px 0; }
     canvas { max-width: 100%; height: auto; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); display: none; }
     .stats-card { background: #334155; border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; display: none; }
     .stats-grid { display: flex; justify-content: space-around; flex-wrap: wrap; gap: 12px; }
@@ -27,19 +27,22 @@
     .stat-value { font-size: 1.1rem; font-weight: bold; color: #4ade80; }
     .btn { background: #0284c7; color: white; border: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; cursor: pointer; width: 100%; font-size: 1rem; }
     .btn:hover { background: #0369a1; }
+    .btn-secondary { background: #475569; color: #f8fafc; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.85rem; }
+    .btn-secondary:hover { background: #64748b; }
     .btn:disabled { background: #475569; cursor: not-allowed; }
+    .header-row { display: flex; justify-content: space-between; align-items: center; }
   </style>
 </head>
 <body>
 
 <div class="container">
-  <h1>YouTube Thumbnail Generator</h1>
+  <h1>YouTube Thumbnail Generator & Enhancer</h1>
 
-  <!-- Image Settings -->
+  <!-- 1. Base Setup -->
   <div class="section-title">1. Base Image Setup</div>
   <div class="controls">
     <div>
-      <label>Select Background Photo</label>
+      <label>Select Photo</label>
       <input type="file" id="imageInput" accept="image/*">
     </div>
     <div>
@@ -60,12 +63,32 @@
     </div>
   </div>
 
-  <!-- Text Layer 1 -->
-  <div class="section-title">2. Primary Text Overlay</div>
+  <!-- 2. Image Enhancements -->
+  <div class="header-row section-title">
+    <span>2. Image Enhancements & Adjustments</span>
+    <button type="button" class="btn-secondary" id="resetFiltersBtn">Reset Adjustments</button>
+  </div>
+  <div class="controls">
+    <div>
+      <label>Brightness: <span id="brightLabel">100%</span></label>
+      <input type="range" id="brightSlider" min="50" max="180" value="100">
+    </div>
+    <div>
+      <label>Contrast: <span id="contrastLabel">100%</span></label>
+      <input type="range" id="contrastSlider" min="50" max="200" value="100">
+    </div>
+    <div>
+      <label>Vibrance / Saturation: <span id="saturateLabel">100%</span></label>
+      <input type="range" id="saturateSlider" min="0" max="250" value="100">
+    </div>
+  </div>
+
+  <!-- 3. Text Overlay -->
+  <div class="section-title">3. Text Overlay</div>
   <div class="controls">
     <div>
       <label>Text Content</label>
-      <input type="text" id="textLine1" placeholder="e.g. 10X YOUR VIEWS">
+      <input type="text" id="textLine1" placeholder="e.g. INSANE RESULTS!">
     </div>
     <div>
       <label>Font Family</label>
@@ -100,10 +123,10 @@
     </div>
   </div>
 
-  <!-- Preview Box -->
+  <!-- Preview Area -->
   <div class="preview-box">
     <canvas id="outputCanvas"></canvas>
-    <div id="placeholderText" style="color: #64748b; padding: 40px 0;">Upload an image to start designing</div>
+    <div id="placeholderText" style="color: #64748b; padding: 40px 0;">Upload an image to start editing</div>
   </div>
 
   <!-- Output Verification -->
@@ -128,7 +151,7 @@
 </div>
 
 <script>
-  // DOM References
+  // DOM References: Base & Canvas
   const imageInput = document.getElementById('imageInput');
   const resPreset = document.getElementById('resPreset');
   const fitMode = document.getElementById('fitMode');
@@ -141,7 +164,16 @@
   const fileSizeVal = document.getElementById('fileSizeVal');
   const downloadBtn = document.getElementById('downloadBtn');
 
-  // Text Layer DOM References
+  // DOM References: Enhancement Sliders
+  const brightSlider = document.getElementById('brightSlider');
+  const brightLabel = document.getElementById('brightLabel');
+  const contrastSlider = document.getElementById('contrastSlider');
+  const contrastLabel = document.getElementById('contrastLabel');
+  const saturateSlider = document.getElementById('saturateSlider');
+  const saturateLabel = document.getElementById('saturateLabel');
+  const resetFiltersBtn = document.getElementById('resetFiltersBtn');
+
+  // DOM References: Text Overlay
   const textLine1 = document.getElementById('textLine1');
   const fontFamily1 = document.getElementById('fontFamily1');
   const fontSize1 = document.getElementById('fontSize1');
@@ -155,11 +187,35 @@
 
   let currentImage = null;
 
-  // Listeners for image & canvas presets
+  // Base Event Listeners
   resPreset.addEventListener('change', renderCanvas);
   fitMode.addEventListener('change', renderCanvas);
 
-  // Listeners for text layer inputs
+  // Enhancement Listeners
+  brightSlider.addEventListener('input', (e) => {
+    brightLabel.textContent = `${e.target.value}%`;
+    renderCanvas();
+  });
+  contrastSlider.addEventListener('input', (e) => {
+    contrastLabel.textContent = `${e.target.value}%`;
+    renderCanvas();
+  });
+  saturateSlider.addEventListener('input', (e) => {
+    saturateLabel.textContent = `${e.target.value}%`;
+    renderCanvas();
+  });
+
+  resetFiltersBtn.addEventListener('click', () => {
+    brightSlider.value = 100;
+    brightLabel.textContent = '100%';
+    contrastSlider.value = 100;
+    contrastLabel.textContent = '100%';
+    saturateSlider.value = 100;
+    saturateLabel.textContent = '100%';
+    renderCanvas();
+  });
+
+  // Text Event Listeners
   textLine1.addEventListener('input', renderCanvas);
   fontFamily1.addEventListener('change', renderCanvas);
   fillColor1.addEventListener('input', renderCanvas);
@@ -180,7 +236,7 @@
     renderCanvas();
   });
 
-  // Handle image upload
+  // File Upload Handler
   imageInput.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -190,17 +246,14 @@
       currentImage = new Image();
       currentImage.onload = () => {
         srcResVal.textContent = `${currentImage.naturalWidth} × ${currentImage.naturalHeight} px`;
-        // Ensure web fonts are parsed before first draw
-        document.fonts.ready.then(() => {
-          renderCanvas();
-        });
+        document.fonts.ready.then(() => renderCanvas());
       };
       currentImage.src = event.target.result;
     };
     reader.readAsDataURL(file);
   });
 
-  // Main Render Pipeline
+  // Render Pipeline
   function renderCanvas() {
     if (!currentImage) return;
 
@@ -209,11 +262,19 @@
     canvas.width = targetWidth;
     canvas.height = targetHeight;
 
-    // Base background fill
+    // Reset base canvas state
+    ctx.filter = 'none';
     ctx.fillStyle = '#000000';
     ctx.fillRect(0, 0, targetWidth, targetHeight);
 
-    // 2. Draw Image Layer
+    // 2. Draw Filtered Image Layer
+    ctx.save();
+    // Apply tone and color adjustments
+    const brightness = brightSlider.value;
+    const contrast = contrastSlider.value;
+    const saturate = saturateSlider.value;
+    ctx.filter = `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturate}%)`;
+
     const mode = fitMode.value;
     const imgW = currentImage.naturalWidth;
     const imgH = currentImage.naturalHeight;
@@ -235,11 +296,11 @@
       const offsetY = (targetHeight - renderH) / 2;
       ctx.drawImage(currentImage, offsetX, offsetY, renderW, renderH);
     }
+    ctx.restore(); // Restores clean state with filter = 'none'
 
     // 3. Draw Text Overlay Layer
     const text = textLine1.value.trim();
     if (text.length > 0) {
-      // Scale font size proportionally if canvas resolution changes (e.g. 1080p vs 720p)
       const scaleMultiplier = targetWidth / 1280;
       const finalFontSize = parseFloat(fontSize1.value) * scaleMultiplier;
       const finalStrokeWidth = parseFloat(strokeWidth1.value) * scaleMultiplier;
@@ -248,20 +309,20 @@
       ctx.font = `900 ${finalFontSize}px ${fontFamily1.value}`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.lineJoin = 'round'; // Smooths corners of text outlines
+      ctx.lineJoin = 'round';
       ctx.miterLimit = 2;
 
       const posX = targetWidth / 2;
       const posY = (targetHeight * parseFloat(posY1.value)) / 100;
 
-      // Draw Stroke (Outline) first
+      // Outer Stroke
       if (finalStrokeWidth > 0) {
         ctx.strokeStyle = strokeColor1.value;
         ctx.lineWidth = finalStrokeWidth;
         ctx.strokeText(text, posX, posY);
       }
 
-      // Draw Fill on top
+      // Inner Fill
       ctx.fillStyle = fillColor1.value;
       ctx.fillText(text, posX, posY);
 
@@ -274,18 +335,17 @@
     statsCard.style.display = 'block';
     downloadBtn.disabled = false;
 
-    // Verify stats
+    // Verify Output
     verifyOutput(targetWidth, targetHeight);
   }
 
-  // Verification helper
+  // Verification & Output Calculation
   function verifyOutput(targetWidth, targetHeight) {
     canvas.toBlob((blob) => {
       const sizeKB = (blob.size / 1024).toFixed(1);
       const sizeMB = (blob.size / (1024 * 1024)).toFixed(2);
       fileSizeVal.textContent = blob.size > 1024 * 1024 ? `${sizeMB} MB` : `${sizeKB} KB`;
 
-      // Read back blob to confirm exact decoded pixel buffer
       const testImg = new Image();
       const testUrl = URL.createObjectURL(blob);
       testImg.onload = () => {
@@ -296,7 +356,7 @@
     }, 'image/jpeg', 0.90);
   }
 
-  // Download Handler
+  // Download Output Handler
   downloadBtn.addEventListener('click', () => {
     const [w, h] = resPreset.value.split('x');
     const link = document.createElement('a');
