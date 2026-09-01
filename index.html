@@ -2,8 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>YouTube Thumbnail Generator & Enhancer</title>
-  <!-- Google Display Fonts -->
+  <title>YouTube Thumbnail Studio - Phase 2</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@900&family=Oswald:wght@700&family=Permanent+Marker&family=Rubik+Mono+One&display=swap" rel="stylesheet">
@@ -11,14 +10,17 @@
   <style>
     * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     body { background: #0f172a; color: #f8fafc; margin: 0; padding: 24px; display: flex; justify-content: center; }
-    .container { width: 100%; max-width: 960px; background: #1e293b; border-radius: 12px; padding: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+    .container { width: 100%; max-width: 980px; background: #1e293b; border-radius: 12px; padding: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
     h1 { margin-top: 0; font-size: 1.5rem; color: #38bdf8; }
     .section-title { font-size: 1rem; color: #cbd5e1; margin-top: 20px; margin-bottom: 10px; border-bottom: 1px solid #334155; padding-bottom: 6px; font-weight: bold; }
     .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 16px; }
     label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: #94a3b8; }
     select, input[type="text"], input[type="file"], input[type="range"], input[type="color"] { width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #475569; background: #0f172a; color: #f8fafc; height: 38px; }
     input[type="color"] { padding: 2px; cursor: pointer; }
-    .preview-box { border: 2px dashed #475569; border-radius: 8px; padding: 16px; text-align: center; background: #0b1120; margin: 20px 0; }
+    .checkbox-container { display: flex; align-items: center; gap: 8px; height: 38px; background: #0f172a; padding: 8px 12px; border-radius: 6px; border: 1px solid #475569; cursor: pointer; }
+    .checkbox-container input { width: auto; height: auto; cursor: pointer; }
+    .checkbox-container span { font-size: 0.85rem; font-weight: 600; color: #f8fafc; }
+    .preview-box { border: 2px dashed #475569; border-radius: 8px; padding: 16px; text-align: center; background: #0b1120; margin: 20px 0; min-height: 250px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
     canvas { max-width: 100%; height: auto; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); display: none; }
     .stats-card { background: #334155; border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; display: none; }
     .stats-grid { display: flex; justify-content: space-around; flex-wrap: wrap; gap: 12px; }
@@ -31,14 +33,15 @@
     .btn-secondary:hover { background: #64748b; }
     .btn:disabled { background: #475569; cursor: not-allowed; }
     .header-row { display: flex; justify-content: space-between; align-items: center; }
+    .error-banner { background: #ef4444; color: white; padding: 10px 14px; border-radius: 6px; margin-bottom: 16px; font-size: 0.9rem; display: none; }
   </style>
 </head>
 <body>
 
 <div class="container">
-  <h1>YouTube Thumbnail Generator & Enhancer</h1>
+  <h1>YouTube Thumbnail Studio</h1>
+  <div id="errorBanner" class="error-banner"></div>
 
-  <!-- 1. Base Setup -->
   <div class="section-title">1. Base Image Setup</div>
   <div class="controls">
     <div>
@@ -61,11 +64,17 @@
         <option value="stretch">Stretch to Fit</option>
       </select>
     </div>
+    <div>
+      <label>Safe-Zone Overlay</label>
+      <label class="checkbox-container">
+        <input type="checkbox" id="safeZoneToggle" checked>
+        <span>Show YouTube UI Guide</span>
+      </label>
+    </div>
   </div>
 
-  <!-- 2. Image Enhancements -->
   <div class="header-row section-title">
-    <span>2. Image Enhancements & Adjustments</span>
+    <span>2. Image Enhancements</span>
     <button type="button" class="btn-secondary" id="resetFiltersBtn">Reset Adjustments</button>
   </div>
   <div class="controls">
@@ -83,53 +92,127 @@
     </div>
   </div>
 
-  <!-- 3. Text Overlay -->
-  <div class="section-title">3. Text Overlay</div>
+  <div class="section-title">3. Primary Headline (Line 1)</div>
   <div class="controls">
     <div>
       <label>Text Content</label>
-      <input type="text" id="textLine1" placeholder="e.g. INSANE RESULTS!">
+      <input type="text" id="textLine1" placeholder="e.g. HOW I MADE" value="HOW I MADE">
     </div>
     <div>
       <label>Font Family</label>
       <select id="fontFamily1">
-        <option value="'Bebas Neue', sans-serif">Bebas Neue (YouTube Classic)</option>
-        <option value="'Montserrat', sans-serif">Montserrat Black</option>
-        <option value="'Oswald', sans-serif">Oswald Bold</option>
-        <option value="'Rubik Mono One', sans-serif">Rubik Mono</option>
-        <option value="'Permanent Marker', cursive">Permanent Marker</option>
+        <option value="'Bebas Neue', Impact, sans-serif">Bebas Neue (YouTube Classic)</option>
+        <option value="'Montserrat', Impact, sans-serif">Montserrat Black</option>
+        <option value="'Oswald', Impact, sans-serif">Oswald Bold</option>
+        <option value="'Rubik Mono One', Impact, sans-serif">Rubik Mono</option>
+        <option value="'Permanent Marker', cursive, sans-serif">Permanent Marker</option>
         <option value="Impact, sans-serif">Impact (System)</option>
       </select>
     </div>
     <div>
-      <label>Font Size (<span id="fontSizeLabel1">90px</span>)</label>
-      <input type="range" id="fontSize1" min="30" max="220" value="90">
+      <label>Font Size (<span id="fontSizeLabel1">80px</span>)</label>
+      <input type="range" id="fontSize1" min="30" max="220" value="80">
     </div>
     <div>
       <label>Text Fill Color</label>
-      <input type="color" id="fillColor1" value="#ffeb3b">
+      <input type="color" id="fillColor1" value="#ffffff">
     </div>
     <div>
-      <label>Outline / Stroke Color</label>
+      <label>Outline Color</label>
       <input type="color" id="strokeColor1" value="#000000">
     </div>
     <div>
-      <label>Outline Width (<span id="strokeWidthLabel1">14px</span>)</label>
-      <input type="range" id="strokeWidth1" min="0" max="40" value="14">
+      <label>Outline Width (<span id="strokeWidthLabel1">12px</span>)</label>
+      <input type="range" id="strokeWidth1" min="0" max="40" value="12">
     </div>
     <div>
-      <label>Vertical Position Y% (<span id="posYLabel1">75%</span>)</label>
-      <input type="range" id="posY1" min="10" max="95" value="75">
+      <label>Vertical Position Y% (<span id="posYLabel1">55%</span>)</label>
+      <input type="range" id="posY1" min="10" max="95" value="55">
+    </div>
+    <div>
+      <label>Angle / Tilt (<span id="angleLabel1">-4°</span>)</label>
+      <input type="range" id="angle1" min="-25" max="25" value="-4">
+    </div>
+    <div>
+      <label>Badge Background</label>
+      <label class="checkbox-container">
+        <input type="checkbox" id="badgeToggle1" checked>
+        <span>Enable Highlight Box</span>
+      </label>
+    </div>
+    <div>
+      <label>Badge Color</label>
+      <input type="color" id="badgeColor1" value="#dc2626">
+    </div>
+    <div>
+      <label>Badge Padding (<span id="badgePadLabel1">16px</span>)</label>
+      <input type="range" id="badgePadding1" min="0" max="50" value="16">
     </div>
   </div>
 
-  <!-- Preview Area -->
-  <div class="preview-box">
-    <canvas id="outputCanvas"></canvas>
-    <div id="placeholderText" style="color: #64748b; padding: 40px 0;">Upload an image to start editing</div>
+  <div class="section-title">4. Secondary Subheader (Line 2)</div>
+  <div class="controls">
+    <div>
+      <label>Text Content</label>
+      <input type="text" id="textLine2" placeholder="e.g. $10,000 / MO" value="$10,000 / MO">
+    </div>
+    <div>
+      <label>Font Family</label>
+      <select id="fontFamily2">
+        <option value="'Montserrat', Impact, sans-serif">Montserrat Black</option>
+        <option value="'Bebas Neue', Impact, sans-serif">Bebas Neue (YouTube Classic)</option>
+        <option value="'Oswald', Impact, sans-serif">Oswald Bold</option>
+        <option value="'Rubik Mono One', Impact, sans-serif">Rubik Mono</option>
+        <option value="'Permanent Marker', cursive, sans-serif">Permanent Marker</option>
+        <option value="Impact, sans-serif">Impact (System)</option>
+      </select>
+    </div>
+    <div>
+      <label>Font Size (<span id="fontSizeLabel2">105px</span>)</label>
+      <input type="range" id="fontSize2" min="30" max="220" value="105">
+    </div>
+    <div>
+      <label>Text Fill Color</label>
+      <input type="color" id="fillColor2" value="#ffeb3b">
+    </div>
+    <div>
+      <label>Outline Color</label>
+      <input type="color" id="strokeColor2" value="#000000">
+    </div>
+    <div>
+      <label>Outline Width (<span id="strokeWidthLabel2">14px</span>)</label>
+      <input type="range" id="strokeWidth2" min="0" max="40" value="14">
+    </div>
+    <div>
+      <label>Vertical Position Y% (<span id="posYLabel2">74%</span>)</label>
+      <input type="range" id="posY2" min="10" max="95" value="74">
+    </div>
+    <div>
+      <label>Angle / Tilt (<span id="angleLabel2">-4°</span>)</label>
+      <input type="range" id="angle2" min="-25" max="25" value="-4">
+    </div>
+    <div>
+      <label>Badge Background</label>
+      <label class="checkbox-container">
+        <input type="checkbox" id="badgeToggle2">
+        <span>Enable Highlight Box</span>
+      </label>
+    </div>
+    <div>
+      <label>Badge Color</label>
+      <input type="color" id="badgeColor2" value="#000000">
+    </div>
+    <div>
+      <label>Badge Padding (<span id="badgePadLabel2">16px</span>)</label>
+      <input type="range" id="badgePadding2" min="0" max="50" value="16">
+    </div>
   </div>
 
-  <!-- Output Verification -->
+  <div class="preview-box">
+    <canvas id="outputCanvas"></canvas>
+    <div id="placeholderText" style="color: #64748b; padding: 40px 0;">Upload an image to start designing</div>
+  </div>
+
   <div class="stats-card" id="statsCard">
     <div class="stats-grid">
       <div class="stat-item">
@@ -147,14 +230,24 @@
     </div>
   </div>
 
-  <button class="btn" id="downloadBtn" disabled>Download Optimized Thumbnail</button>
+  <button class="btn" id="downloadBtn" disabled>Download Clean Optimized Thumbnail</button>
 </div>
 
 <script>
-  // DOM References: Base & Canvas
+  const errorBanner = document.getElementById('errorBanner');
+  function showError(msg) {
+    errorBanner.textContent = msg;
+    errorBanner.style.display = 'block';
+  }
+  function clearError() {
+    errorBanner.style.display = 'none';
+  }
+
+  // DOM References
   const imageInput = document.getElementById('imageInput');
   const resPreset = document.getElementById('resPreset');
   const fitMode = document.getElementById('fitMode');
+  const safeZoneToggle = document.getElementById('safeZoneToggle');
   const canvas = document.getElementById('outputCanvas');
   const ctx = canvas.getContext('2d');
   const placeholderText = document.getElementById('placeholderText');
@@ -164,7 +257,7 @@
   const fileSizeVal = document.getElementById('fileSizeVal');
   const downloadBtn = document.getElementById('downloadBtn');
 
-  // DOM References: Enhancement Sliders
+  // Enhancements
   const brightSlider = document.getElementById('brightSlider');
   const brightLabel = document.getElementById('brightLabel');
   const contrastSlider = document.getElementById('contrastSlider');
@@ -173,7 +266,7 @@
   const saturateLabel = document.getElementById('saturateLabel');
   const resetFiltersBtn = document.getElementById('resetFiltersBtn');
 
-  // DOM References: Text Overlay
+  // Line 1
   const textLine1 = document.getElementById('textLine1');
   const fontFamily1 = document.getElementById('fontFamily1');
   const fontSize1 = document.getElementById('fontSize1');
@@ -184,164 +277,284 @@
   const strokeWidthLabel1 = document.getElementById('strokeWidthLabel1');
   const posY1 = document.getElementById('posY1');
   const posYLabel1 = document.getElementById('posYLabel1');
+  const angle1 = document.getElementById('angle1');
+  const angleLabel1 = document.getElementById('angleLabel1');
+  const badgeToggle1 = document.getElementById('badgeToggle1');
+  const badgeColor1 = document.getElementById('badgeColor1');
+  const badgePadding1 = document.getElementById('badgePadding1');
+  const badgePadLabel1 = document.getElementById('badgePadLabel1');
+
+  // Line 2
+  const textLine2 = document.getElementById('textLine2');
+  const fontFamily2 = document.getElementById('fontFamily2');
+  const fontSize2 = document.getElementById('fontSize2');
+  const fontSizeLabel2 = document.getElementById('fontSizeLabel2');
+  const fillColor2 = document.getElementById('fillColor2');
+  const strokeColor2 = document.getElementById('strokeColor2');
+  const strokeWidth2 = document.getElementById('strokeWidth2');
+  const strokeWidthLabel2 = document.getElementById('strokeWidthLabel2');
+  const posY2 = document.getElementById('posY2');
+  const posYLabel2 = document.getElementById('posYLabel2');
+  const angle2 = document.getElementById('angle2');
+  const angleLabel2 = document.getElementById('angleLabel2');
+  const badgeToggle2 = document.getElementById('badgeToggle2');
+  const badgeColor2 = document.getElementById('badgeColor2');
+  const badgePadding2 = document.getElementById('badgePadding2');
+  const badgePadLabel2 = document.getElementById('badgePadLabel2');
 
   let currentImage = null;
+  let currentObjectUrl = null;
 
-  // Base Event Listeners
-  resPreset.addEventListener('change', renderCanvas);
-  fitMode.addEventListener('change', renderCanvas);
+  // Listeners
+  resPreset.addEventListener('change', () => renderCanvas(true));
+  fitMode.addEventListener('change', () => renderCanvas(true));
+  safeZoneToggle.addEventListener('change', () => renderCanvas(true));
 
-  // Enhancement Listeners
-  brightSlider.addEventListener('input', (e) => {
-    brightLabel.textContent = `${e.target.value}%`;
-    renderCanvas();
-  });
-  contrastSlider.addEventListener('input', (e) => {
-    contrastLabel.textContent = `${e.target.value}%`;
-    renderCanvas();
-  });
-  saturateSlider.addEventListener('input', (e) => {
-    saturateLabel.textContent = `${e.target.value}%`;
-    renderCanvas();
-  });
+  brightSlider.addEventListener('input', (e) => { brightLabel.textContent = `${e.target.value}%`; renderCanvas(true); });
+  contrastSlider.addEventListener('input', (e) => { contrastLabel.textContent = `${e.target.value}%`; renderCanvas(true); });
+  saturateSlider.addEventListener('input', (e) => { saturateLabel.textContent = `${e.target.value}%`; renderCanvas(true); });
 
   resetFiltersBtn.addEventListener('click', () => {
-    brightSlider.value = 100;
-    brightLabel.textContent = '100%';
-    contrastSlider.value = 100;
-    contrastLabel.textContent = '100%';
-    saturateSlider.value = 100;
-    saturateLabel.textContent = '100%';
-    renderCanvas();
+    brightSlider.value = 100; brightLabel.textContent = '100%';
+    contrastSlider.value = 100; contrastLabel.textContent = '100%';
+    saturateSlider.value = 100; saturateLabel.textContent = '100%';
+    renderCanvas(true);
   });
 
-  // Text Event Listeners
-  textLine1.addEventListener('input', renderCanvas);
-  fontFamily1.addEventListener('change', renderCanvas);
-  fillColor1.addEventListener('input', renderCanvas);
-  strokeColor1.addEventListener('input', renderCanvas);
+  // Line 1 Listeners
+  textLine1.addEventListener('input', () => renderCanvas(true));
+  fontFamily1.addEventListener('change', () => renderCanvas(true));
+  fillColor1.addEventListener('input', () => renderCanvas(true));
+  strokeColor1.addEventListener('input', () => renderCanvas(true));
+  badgeToggle1.addEventListener('change', () => renderCanvas(true));
+  badgeColor1.addEventListener('input', () => renderCanvas(true));
+  fontSize1.addEventListener('input', (e) => { fontSizeLabel1.textContent = `${e.target.value}px`; renderCanvas(true); });
+  strokeWidth1.addEventListener('input', (e) => { strokeWidthLabel1.textContent = `${e.target.value}px`; renderCanvas(true); });
+  posY1.addEventListener('input', (e) => { posYLabel1.textContent = `${e.target.value}%`; renderCanvas(true); });
+  angle1.addEventListener('input', (e) => { angleLabel1.textContent = `${e.target.value}°`; renderCanvas(true); });
+  badgePadding1.addEventListener('input', (e) => { badgePadLabel1.textContent = `${e.target.value}px`; renderCanvas(true); });
 
-  fontSize1.addEventListener('input', (e) => {
-    fontSizeLabel1.textContent = `${e.target.value}px`;
-    renderCanvas();
-  });
+  // Line 2 Listeners
+  textLine2.addEventListener('input', () => renderCanvas(true));
+  fontFamily2.addEventListener('change', () => renderCanvas(true));
+  fillColor2.addEventListener('input', () => renderCanvas(true));
+  strokeColor2.addEventListener('input', () => renderCanvas(true));
+  badgeToggle2.addEventListener('change', () => renderCanvas(true));
+  badgeColor2.addEventListener('input', () => renderCanvas(true));
+  fontSize2.addEventListener('input', (e) => { fontSizeLabel2.textContent = `${e.target.value}px`; renderCanvas(true); });
+  strokeWidth2.addEventListener('input', (e) => { strokeWidthLabel2.textContent = `${e.target.value}px`; renderCanvas(true); });
+  posY2.addEventListener('input', (e) => { posYLabel2.textContent = `${e.target.value}%`; renderCanvas(true); });
+  angle2.addEventListener('input', (e) => { angleLabel2.textContent = `${e.target.value}°`; renderCanvas(true); });
+  badgePadding2.addEventListener('input', (e) => { badgePadLabel2.textContent = `${e.target.value}px`; renderCanvas(true); });
 
-  strokeWidth1.addEventListener('input', (e) => {
-    strokeWidthLabel1.textContent = `${e.target.value}px`;
-    renderCanvas();
-  });
-
-  posY1.addEventListener('input', (e) => {
-    posYLabel1.textContent = `${e.target.value}%`;
-    renderCanvas();
-  });
-
-  // File Upload Handler
+  // Highly Reliable Image Loading
   imageInput.addEventListener('change', (e) => {
+    clearError();
     const file = e.target.files[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      currentImage = new Image();
-      currentImage.onload = () => {
+    if (currentObjectUrl) {
+      URL.revokeObjectURL(currentObjectUrl);
+    }
+
+    try {
+      currentObjectUrl = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => {
+        currentImage = img;
         srcResVal.textContent = `${currentImage.naturalWidth} × ${currentImage.naturalHeight} px`;
-        document.fonts.ready.then(() => renderCanvas());
+        renderCanvas(true);
       };
-      currentImage.src = event.target.result;
-    };
-    reader.readAsDataURL(file);
+      img.onerror = () => {
+        showError("The selected file could not be decoded. Please ensure it is a standard PNG, JPG, or WEBP image.");
+      };
+      img.src = currentObjectUrl;
+    } catch (err) {
+      showError("Error reading local image: " + err.message);
+    }
   });
 
-  // Render Pipeline
-  function renderCanvas() {
+  // Main Render Pipeline
+  function renderCanvas(includeGuide = true) {
     if (!currentImage) return;
 
-    // 1. Lock Target Resolution
-    const [targetWidth, targetHeight] = resPreset.value.split('x').map(Number);
-    canvas.width = targetWidth;
-    canvas.height = targetHeight;
+    try {
+      const [targetWidth, targetHeight] = resPreset.value.split('x').map(Number);
+      canvas.width = targetWidth;
+      canvas.height = targetHeight;
 
-    // Reset base canvas state
-    ctx.filter = 'none';
-    ctx.fillStyle = '#000000';
-    ctx.fillRect(0, 0, targetWidth, targetHeight);
+      ctx.filter = 'none';
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(0, 0, targetWidth, targetHeight);
 
-    // 2. Draw Filtered Image Layer
-    ctx.save();
-    // Apply tone and color adjustments
-    const brightness = brightSlider.value;
-    const contrast = contrastSlider.value;
-    const saturate = saturateSlider.value;
-    ctx.filter = `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturate}%)`;
-
-    const mode = fitMode.value;
-    const imgW = currentImage.naturalWidth;
-    const imgH = currentImage.naturalHeight;
-
-    if (mode === 'stretch') {
-      ctx.drawImage(currentImage, 0, 0, targetWidth, targetHeight);
-    } else if (mode === 'contain') {
-      const scale = Math.min(targetWidth / imgW, targetHeight / imgH);
-      const renderW = imgW * scale;
-      const renderH = imgH * scale;
-      const offsetX = (targetWidth - renderW) / 2;
-      const offsetY = (targetHeight - renderH) / 2;
-      ctx.drawImage(currentImage, offsetX, offsetY, renderW, renderH);
-    } else if (mode === 'cover') {
-      const scale = Math.max(targetWidth / imgW, targetHeight / imgH);
-      const renderW = imgW * scale;
-      const renderH = imgH * scale;
-      const offsetX = (targetWidth - renderW) / 2;
-      const offsetY = (targetHeight - renderH) / 2;
-      ctx.drawImage(currentImage, offsetX, offsetY, renderW, renderH);
-    }
-    ctx.restore(); // Restores clean state with filter = 'none'
-
-    // 3. Draw Text Overlay Layer
-    const text = textLine1.value.trim();
-    if (text.length > 0) {
-      const scaleMultiplier = targetWidth / 1280;
-      const finalFontSize = parseFloat(fontSize1.value) * scaleMultiplier;
-      const finalStrokeWidth = parseFloat(strokeWidth1.value) * scaleMultiplier;
-
+      // 1. Draw Filtered Image
       ctx.save();
-      ctx.font = `900 ${finalFontSize}px ${fontFamily1.value}`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.lineJoin = 'round';
-      ctx.miterLimit = 2;
+      ctx.filter = `brightness(${brightSlider.value}%) contrast(${contrastSlider.value}%) saturate(${saturateSlider.value}%)`;
 
-      const posX = targetWidth / 2;
-      const posY = (targetHeight * parseFloat(posY1.value)) / 100;
+      const mode = fitMode.value;
+      const imgW = currentImage.naturalWidth;
+      const imgH = currentImage.naturalHeight;
 
-      // Outer Stroke
-      if (finalStrokeWidth > 0) {
-        ctx.strokeStyle = strokeColor1.value;
-        ctx.lineWidth = finalStrokeWidth;
-        ctx.strokeText(text, posX, posY);
+      if (mode === 'stretch') {
+        ctx.drawImage(currentImage, 0, 0, targetWidth, targetHeight);
+      } else if (mode === 'contain') {
+        const scale = Math.min(targetWidth / imgW, targetHeight / imgH);
+        const renderW = imgW * scale;
+        const renderH = imgH * scale;
+        ctx.drawImage(currentImage, (targetWidth - renderW) / 2, (targetHeight - renderH) / 2, renderW, renderH);
+      } else if (mode === 'cover') {
+        const scale = Math.max(targetWidth / imgW, targetHeight / imgH);
+        const renderW = imgW * scale;
+        const renderH = imgH * scale;
+        ctx.drawImage(currentImage, (targetWidth - renderW) / 2, (targetHeight - renderH) / 2, renderW, renderH);
+      }
+      ctx.restore();
+
+      // 2. Draw Text Layers
+      const scaleMult = targetWidth / 1280;
+
+      drawTextLayer({
+        text: textLine1.value.trim(),
+        fontFamily: fontFamily1.value,
+        fontSize: parseFloat(fontSize1.value) * scaleMult,
+        strokeWidth: parseFloat(strokeWidth1.value) * scaleMult,
+        fillColor: fillColor1.value,
+        strokeColor: strokeColor1.value,
+        posYPercent: parseFloat(posY1.value),
+        angleDeg: parseFloat(angle1.value),
+        hasBadge: badgeToggle1.checked,
+        badgeColor: badgeColor1.value,
+        badgePad: parseFloat(badgePadding1.value) * scaleMult,
+        targetWidth,
+        targetHeight,
+        scaleMult
+      });
+
+      drawTextLayer({
+        text: textLine2.value.trim(),
+        fontFamily: fontFamily2.value,
+        fontSize: parseFloat(fontSize2.value) * scaleMult,
+        strokeWidth: parseFloat(strokeWidth2.value) * scaleMult,
+        fillColor: fillColor2.value,
+        strokeColor: strokeColor2.value,
+        posYPercent: parseFloat(posY2.value),
+        angleDeg: parseFloat(angle2.value),
+        hasBadge: badgeToggle2.checked,
+        badgeColor: badgeColor2.value,
+        badgePad: parseFloat(badgePadding2.value) * scaleMult,
+        targetWidth,
+        targetHeight,
+        scaleMult
+      });
+
+      // 3. YouTube UI Safe-Zone Guide
+      if (includeGuide && safeZoneToggle.checked) {
+        drawYouTubeGuide(targetWidth, targetHeight);
       }
 
-      // Inner Fill
-      ctx.fillStyle = fillColor1.value;
-      ctx.fillText(text, posX, posY);
+      // UI Displays
+      canvas.style.display = 'inline-block';
+      placeholderText.style.display = 'none';
+      statsCard.style.display = 'block';
+      downloadBtn.disabled = false;
 
-      ctx.restore();
+      verifyOutput(targetWidth, targetHeight);
+    } catch (renderErr) {
+      showError("Rendering error: " + renderErr.message);
     }
-
-    // UI Updates
-    canvas.style.display = 'inline-block';
-    placeholderText.style.display = 'none';
-    statsCard.style.display = 'block';
-    downloadBtn.disabled = false;
-
-    // Verify Output
-    verifyOutput(targetWidth, targetHeight);
   }
 
-  // Verification & Output Calculation
+  // Draw Individual Text Layer
+  function drawTextLayer(cfg) {
+    if (!cfg.text || cfg.text.length === 0) return;
+
+    ctx.save();
+    const posX = cfg.targetWidth / 2;
+    const posY = (cfg.targetHeight * cfg.posYPercent) / 100;
+
+    ctx.translate(posX, posY);
+    ctx.rotate((cfg.angleDeg * Math.PI) / 180);
+
+    ctx.font = `900 ${cfg.fontSize}px ${cfg.fontFamily}`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    // Draw Badge
+    if (cfg.hasBadge) {
+      const metrics = ctx.measureText(cfg.text);
+      const textWidth = metrics.width;
+      const ascent = metrics.actualBoundingBoxAscent || (cfg.fontSize * 0.75);
+      const descent = metrics.actualBoundingBoxDescent || (cfg.fontSize * 0.1);
+      const textHeight = ascent + descent;
+
+      const boxW = textWidth + (cfg.badgePad * 2);
+      const boxH = textHeight + (cfg.badgePad * 2);
+      const boxX = -(boxW / 2);
+      const boxY = (0 - (ascent / 2) + (descent / 2)) - (boxH / 2);
+      const cornerRadius = 8 * cfg.scaleMult;
+
+      ctx.fillStyle = cfg.badgeColor;
+      ctx.beginPath();
+      if (typeof ctx.roundRect === 'function') {
+        ctx.roundRect(boxX, boxY, boxW, boxH, cornerRadius);
+      } else {
+        ctx.rect(boxX, boxY, boxW, boxH);
+      }
+      ctx.fill();
+    }
+
+    // Outline
+    ctx.lineJoin = 'round';
+    ctx.miterLimit = 2;
+    if (cfg.strokeWidth > 0) {
+      ctx.strokeStyle = cfg.strokeColor;
+      ctx.lineWidth = cfg.strokeWidth;
+      ctx.strokeText(cfg.text, 0, 0);
+    }
+
+    // Fill
+    ctx.fillStyle = cfg.fillColor;
+    ctx.fillText(cfg.text, 0, 0);
+
+    ctx.restore();
+  }
+
+  // Safe-Zone Guide
+  function drawYouTubeGuide(w, h) {
+    const scaleMult = w / 1280;
+    const stampW = 92 * scaleMult;
+    const stampH = 34 * scaleMult;
+    const stampX = w - stampW - (20 * scaleMult);
+    const stampY = h - stampH - (20 * scaleMult);
+
+    ctx.save();
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
+    ctx.beginPath();
+    if (typeof ctx.roundRect === 'function') {
+      ctx.roundRect(stampX, stampY, stampW, stampH, 4 * scaleMult);
+    } else {
+      ctx.rect(stampX, stampY, stampW, stampH);
+    }
+    ctx.fill();
+
+    ctx.font = `700 ${18 * scaleMult}px -apple-system, Roboto, sans-serif`;
+    ctx.fillStyle = '#ffffff';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('12:45', stampX + (stampW / 2), stampY + (stampH / 2) + (1 * scaleMult));
+
+    ctx.strokeStyle = 'rgba(56, 189, 248, 0.45)';
+    ctx.lineWidth = 2 * scaleMult;
+    ctx.setLineDash([8 * scaleMult, 6 * scaleMult]);
+    ctx.strokeRect(20 * scaleMult, 20 * scaleMult, w - (40 * scaleMult), h - (40 * scaleMult));
+
+    ctx.restore();
+  }
+
+  // Verification & File Size
   function verifyOutput(targetWidth, targetHeight) {
     canvas.toBlob((blob) => {
+      if (!blob) return;
       const sizeKB = (blob.size / 1024).toFixed(1);
       const sizeMB = (blob.size / (1024 * 1024)).toFixed(2);
       fileSizeVal.textContent = blob.size > 1024 * 1024 ? `${sizeMB} MB` : `${sizeKB} KB`;
@@ -356,13 +569,15 @@
     }, 'image/jpeg', 0.90);
   }
 
-  // Download Output Handler
+  // Download Output
   downloadBtn.addEventListener('click', () => {
+    renderCanvas(false);
     const [w, h] = resPreset.value.split('x');
     const link = document.createElement('a');
     link.download = `thumbnail_${w}x${h}.jpg`;
     link.href = canvas.toDataURL('image/jpeg', 0.90);
     link.click();
+    renderCanvas(true);
   });
 </script>
 </body>
