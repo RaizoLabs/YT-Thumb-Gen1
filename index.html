@@ -2,262 +2,318 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>YouTube Thumbnail Studio - Phase 2</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@900&family=Oswald:wght@700&family=Permanent+Marker&family=Rubik+Mono+One&display=swap" rel="stylesheet">
-
+  <title>YouTube Thumbnail Studio</title>
   <style>
     * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background: #0f172a; color: #f8fafc; margin: 0; padding: 24px; display: flex; justify-content: center; }
-    .container { width: 100%; max-width: 980px; background: #1e293b; border-radius: 12px; padding: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
-    h1 { margin-top: 0; font-size: 1.5rem; color: #38bdf8; }
-    .section-title { font-size: 1rem; color: #cbd5e1; margin-top: 20px; margin-bottom: 10px; border-bottom: 1px solid #334155; padding-bottom: 6px; font-weight: bold; }
-    .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 16px; }
-    label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: #94a3b8; }
-    select, input[type="text"], input[type="file"], input[type="range"], input[type="color"] { width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #475569; background: #0f172a; color: #f8fafc; height: 38px; }
+    body { background: #0f172a; color: #f8fafc; margin: 0; padding: 16px; }
+    .studio-container { max-width: 1440px; margin: 0 auto; }
+    h1 { margin: 0 0 16px 0; font-size: 1.4rem; color: #38bdf8; }
+
+    /* Layout */
+    .app-layout { display: grid; grid-template-columns: 440px 1fr; gap: 20px; align-items: start; }
+    @media (max-width: 1024px) { .app-layout { grid-template-columns: 1fr; } }
+
+    /* Controls */
+    .sidebar-controls { display: flex; flex-direction: column; gap: 12px; }
+    .card { background: #1e293b; border-radius: 8px; border: 1px solid #334155; padding: 14px; }
+    .card-title { font-size: 0.9rem; font-weight: 700; color: #f1f5f9; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+    .card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .full-width { grid-column: span 2; }
+
+    /* Form Elements */
+    label { display: block; font-size: 0.75rem; font-weight: 600; margin-bottom: 4px; color: #94a3b8; }
+    select, input[type="text"], input[type="file"], input[type="range"], input[type="color"] { 
+      width: 100%; padding: 6px 8px; border-radius: 6px; border: 1px solid #475569; background: #0f172a; color: #f8fafc; height: 36px; font-size: 0.85rem; 
+    }
     input[type="color"] { padding: 2px; cursor: pointer; }
-    .checkbox-container { display: flex; align-items: center; gap: 8px; height: 38px; background: #0f172a; padding: 8px 12px; border-radius: 6px; border: 1px solid #475569; cursor: pointer; }
-    .checkbox-container input { width: auto; height: auto; cursor: pointer; }
-    .checkbox-container span { font-size: 0.85rem; font-weight: 600; color: #f8fafc; }
-    .preview-box { border: 2px dashed #475569; border-radius: 8px; padding: 16px; text-align: center; background: #0b1120; margin: 20px 0; min-height: 250px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-    canvas { max-width: 100%; height: auto; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); display: none; }
-    .stats-card { background: #334155; border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; display: none; }
-    .stats-grid { display: flex; justify-content: space-around; flex-wrap: wrap; gap: 12px; }
-    .stat-item { text-align: center; }
-    .stat-label { font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; }
-    .stat-value { font-size: 1.1rem; font-weight: bold; color: #4ade80; }
-    .btn { background: #0284c7; color: white; border: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; cursor: pointer; width: 100%; font-size: 1rem; }
+    .checkbox-wrap { display: flex; align-items: center; gap: 8px; height: 36px; background: #0f172a; padding: 6px 10px; border-radius: 6px; border: 1px solid #475569; cursor: pointer; }
+    .checkbox-wrap input { width: auto; height: auto; }
+    .checkbox-wrap span { font-size: 0.8rem; font-weight: 600; color: #f8fafc; }
+
+    /* Preview Box */
+    .preview-column { 
+      background: #1e293b; 
+      border-radius: 8px; 
+      border: 1px solid #334155; 
+      padding: 16px; 
+      display: flex; 
+      flex-direction: column; 
+      gap: 12px;
+      position: sticky;
+      top: 16px;
+    }
+    .status-bar { background: #020617; border: 1px solid #38bdf8; color: #38bdf8; font-family: monospace; font-size: 0.8rem; padding: 8px 12px; border-radius: 6px; }
+    .canvas-container { 
+      background: #020617; 
+      border: 2px dashed #475569; 
+      border-radius: 6px; 
+      padding: 8px; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      min-height: 360px;
+    }
+    canvas { 
+      display: block; 
+      width: 100%; 
+      max-width: 100%; 
+      height: auto; 
+      border-radius: 4px; 
+      cursor: grab;
+    }
+    canvas:active { cursor: grabbing; }
+
+    /* Stats & Buttons */
+    .stats-row { display: flex; justify-content: space-between; background: #0f172a; padding: 8px 14px; border-radius: 6px; border: 1px solid #334155; font-size: 0.8rem; }
+    .stat-val { color: #4ade80; font-weight: bold; }
+    .btn { background: #0284c7; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: 600; cursor: pointer; width: 100%; font-size: 0.95rem; }
     .btn:hover { background: #0369a1; }
-    .btn-secondary { background: #475569; color: #f8fafc; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.85rem; }
-    .btn-secondary:hover { background: #64748b; }
-    .btn:disabled { background: #475569; cursor: not-allowed; }
-    .header-row { display: flex; justify-content: space-between; align-items: center; }
-    .error-banner { background: #ef4444; color: white; padding: 10px 14px; border-radius: 6px; margin-bottom: 16px; font-size: 0.9rem; display: none; }
+    .btn-sm { background: #475569; color: #f8fafc; border: none; padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; }
   </style>
 </head>
 <body>
 
-<div class="container">
+<div class="studio-container">
   <h1>YouTube Thumbnail Studio</h1>
-  <div id="errorBanner" class="error-banner"></div>
 
-  <div class="section-title">1. Base Image Setup</div>
-  <div class="controls">
-    <div>
-      <label>Select Photo</label>
-      <input type="file" id="imageInput" accept="image/*">
-    </div>
-    <div>
-      <label>Target Resolution</label>
-      <select id="resPreset">
-        <option value="1280x720">Standard HD (1280 × 720)</option>
-        <option value="1920x1080">Full HD (1920 × 1080)</option>
-        <option value="3840x2160">4K UHD (3840 × 2160)</option>
-      </select>
-    </div>
-    <div>
-      <label>Fit Mode</label>
-      <select id="fitMode">
-        <option value="cover">Cover (Crop to 16:9)</option>
-        <option value="contain">Contain (Letterbox)</option>
-        <option value="stretch">Stretch to Fit</option>
-      </select>
-    </div>
-    <div>
-      <label>Safe-Zone Overlay</label>
-      <label class="checkbox-container">
-        <input type="checkbox" id="safeZoneToggle" checked>
-        <span>Show YouTube UI Guide</span>
-      </label>
-    </div>
-  </div>
-
-  <div class="header-row section-title">
-    <span>2. Image Enhancements</span>
-    <button type="button" class="btn-secondary" id="resetFiltersBtn">Reset Adjustments</button>
-  </div>
-  <div class="controls">
-    <div>
-      <label>Brightness: <span id="brightLabel">100%</span></label>
-      <input type="range" id="brightSlider" min="50" max="180" value="100">
-    </div>
-    <div>
-      <label>Contrast: <span id="contrastLabel">100%</span></label>
-      <input type="range" id="contrastSlider" min="50" max="200" value="100">
-    </div>
-    <div>
-      <label>Vibrance / Saturation: <span id="saturateLabel">100%</span></label>
-      <input type="range" id="saturateSlider" min="0" max="250" value="100">
-    </div>
-  </div>
-
-  <div class="section-title">3. Primary Headline (Line 1)</div>
-  <div class="controls">
-    <div>
-      <label>Text Content</label>
-      <input type="text" id="textLine1" placeholder="e.g. HOW I MADE" value="HOW I MADE">
-    </div>
-    <div>
-      <label>Font Family</label>
-      <select id="fontFamily1">
-        <option value="'Bebas Neue', Impact, sans-serif">Bebas Neue (YouTube Classic)</option>
-        <option value="'Montserrat', Impact, sans-serif">Montserrat Black</option>
-        <option value="'Oswald', Impact, sans-serif">Oswald Bold</option>
-        <option value="'Rubik Mono One', Impact, sans-serif">Rubik Mono</option>
-        <option value="'Permanent Marker', cursive, sans-serif">Permanent Marker</option>
-        <option value="Impact, sans-serif">Impact (System)</option>
-      </select>
-    </div>
-    <div>
-      <label>Font Size (<span id="fontSizeLabel1">80px</span>)</label>
-      <input type="range" id="fontSize1" min="30" max="220" value="80">
-    </div>
-    <div>
-      <label>Text Fill Color</label>
-      <input type="color" id="fillColor1" value="#ffffff">
-    </div>
-    <div>
-      <label>Outline Color</label>
-      <input type="color" id="strokeColor1" value="#000000">
-    </div>
-    <div>
-      <label>Outline Width (<span id="strokeWidthLabel1">12px</span>)</label>
-      <input type="range" id="strokeWidth1" min="0" max="40" value="12">
-    </div>
-    <div>
-      <label>Vertical Position Y% (<span id="posYLabel1">55%</span>)</label>
-      <input type="range" id="posY1" min="10" max="95" value="55">
-    </div>
-    <div>
-      <label>Angle / Tilt (<span id="angleLabel1">-4°</span>)</label>
-      <input type="range" id="angle1" min="-25" max="25" value="-4">
-    </div>
-    <div>
-      <label>Badge Background</label>
-      <label class="checkbox-container">
-        <input type="checkbox" id="badgeToggle1" checked>
-        <span>Enable Highlight Box</span>
-      </label>
-    </div>
-    <div>
-      <label>Badge Color</label>
-      <input type="color" id="badgeColor1" value="#dc2626">
-    </div>
-    <div>
-      <label>Badge Padding (<span id="badgePadLabel1">16px</span>)</label>
-      <input type="range" id="badgePadding1" min="0" max="50" value="16">
-    </div>
-  </div>
-
-  <div class="section-title">4. Secondary Subheader (Line 2)</div>
-  <div class="controls">
-    <div>
-      <label>Text Content</label>
-      <input type="text" id="textLine2" placeholder="e.g. $10,000 / MO" value="$10,000 / MO">
-    </div>
-    <div>
-      <label>Font Family</label>
-      <select id="fontFamily2">
-        <option value="'Montserrat', Impact, sans-serif">Montserrat Black</option>
-        <option value="'Bebas Neue', Impact, sans-serif">Bebas Neue (YouTube Classic)</option>
-        <option value="'Oswald', Impact, sans-serif">Oswald Bold</option>
-        <option value="'Rubik Mono One', Impact, sans-serif">Rubik Mono</option>
-        <option value="'Permanent Marker', cursive, sans-serif">Permanent Marker</option>
-        <option value="Impact, sans-serif">Impact (System)</option>
-      </select>
-    </div>
-    <div>
-      <label>Font Size (<span id="fontSizeLabel2">105px</span>)</label>
-      <input type="range" id="fontSize2" min="30" max="220" value="105">
-    </div>
-    <div>
-      <label>Text Fill Color</label>
-      <input type="color" id="fillColor2" value="#ffeb3b">
-    </div>
-    <div>
-      <label>Outline Color</label>
-      <input type="color" id="strokeColor2" value="#000000">
-    </div>
-    <div>
-      <label>Outline Width (<span id="strokeWidthLabel2">14px</span>)</label>
-      <input type="range" id="strokeWidth2" min="0" max="40" value="14">
-    </div>
-    <div>
-      <label>Vertical Position Y% (<span id="posYLabel2">74%</span>)</label>
-      <input type="range" id="posY2" min="10" max="95" value="74">
-    </div>
-    <div>
-      <label>Angle / Tilt (<span id="angleLabel2">-4°</span>)</label>
-      <input type="range" id="angle2" min="-25" max="25" value="-4">
-    </div>
-    <div>
-      <label>Badge Background</label>
-      <label class="checkbox-container">
-        <input type="checkbox" id="badgeToggle2">
-        <span>Enable Highlight Box</span>
-      </label>
-    </div>
-    <div>
-      <label>Badge Color</label>
-      <input type="color" id="badgeColor2" value="#000000">
-    </div>
-    <div>
-      <label>Badge Padding (<span id="badgePadLabel2">16px</span>)</label>
-      <input type="range" id="badgePadding2" min="0" max="50" value="16">
-    </div>
-  </div>
-
-  <div class="preview-box">
-    <canvas id="outputCanvas"></canvas>
-    <div id="placeholderText" style="color: #64748b; padding: 40px 0;">Upload an image to start designing</div>
-  </div>
-
-  <div class="stats-card" id="statsCard">
-    <div class="stats-grid">
-      <div class="stat-item">
-        <div class="stat-label">Source Resolution</div>
-        <div class="stat-value" id="srcResVal" style="color: #94a3b8;">-</div>
+  <div class="app-layout">
+    <!-- CONTROLS -->
+    <div class="sidebar-controls">
+      
+      <!-- 1. Background -->
+      <div class="card">
+        <div class="card-title">1. Base Background & Framing</div>
+        <div class="card-grid">
+          <div class="full-width">
+            <label>Background Image</label>
+            <input type="file" id="imageInput" accept="image/*">
+          </div>
+          <div>
+            <label>Resolution Preset</label>
+            <select id="resPreset">
+              <option value="1280x720">Standard HD (1280 × 720)</option>
+              <option value="1920x1080">Full HD (1920 × 1080)</option>
+            </select>
+          </div>
+          <div>
+            <label>Safe-Zone UI Guide</label>
+            <label class="checkbox-wrap">
+              <input type="checkbox" id="safeZoneToggle" checked>
+              <span>Show Guide</span>
+            </label>
+          </div>
+          <div class="full-width">
+            <label>Zoom: <span id="bgZoomLabel">100%</span></label>
+            <input type="range" id="bgZoom" min="100" max="300" value="100">
+          </div>
+          <div>
+            <label>Pan X: <span id="bgPanXLabel">50%</span></label>
+            <input type="range" id="bgPanX" min="0" max="100" value="50">
+          </div>
+          <div>
+            <label>Pan Y: <span id="bgPanYLabel">50%</span></label>
+            <input type="range" id="bgPanY" min="0" max="100" value="50">
+          </div>
+        </div>
       </div>
-      <div class="stat-item">
-        <div class="stat-label">Locked Output Size</div>
-        <div class="stat-value" id="outResVal">-</div>
+
+      <!-- 2. Enhancements -->
+      <div class="card">
+        <div class="card-title">
+          <span>2. Image Enhancements</span>
+          <button type="button" class="btn-sm" id="resetFiltersBtn">Reset</button>
+        </div>
+        <div class="card-grid">
+          <div>
+            <label>Brightness: <span id="brightLabel">100%</span></label>
+            <input type="range" id="brightSlider" min="30" max="180" value="100">
+          </div>
+          <div>
+            <label>Contrast: <span id="contrastLabel">100%</span></label>
+            <input type="range" id="contrastSlider" min="50" max="200" value="100">
+          </div>
+          <div class="full-width">
+            <label>Saturation: <span id="saturateLabel">100%</span></label>
+            <input type="range" id="saturateSlider" min="0" max="250" value="100">
+          </div>
+        </div>
       </div>
-      <div class="stat-item">
-        <div class="stat-label">Calculated File Size</div>
-        <div class="stat-value" id="fileSizeVal">-</div>
+
+      <!-- 3. Cutout -->
+      <div class="card">
+        <div class="card-title">
+          <span>3. Foreground Cutout (PNG)</span>
+          <button type="button" class="btn-sm" id="clearCutoutBtn">Clear</button>
+        </div>
+        <div class="card-grid">
+          <div class="full-width">
+            <label>Cutout Image</label>
+            <input type="file" id="cutoutInput" accept="image/*">
+          </div>
+          <div>
+            <label>Scale: <span id="cutoutScaleLabel">100%</span></label>
+            <input type="range" id="cutoutScale" min="20" max="200" value="100">
+          </div>
+          <div>
+            <label>Position X%: <span id="cutoutPosXLabel">75%</span></label>
+            <input type="range" id="cutoutPosX" min="0" max="100" value="75">
+          </div>
+          <div>
+            <label>Position Y%: <span id="cutoutPosYLabel">50%</span></label>
+            <input type="range" id="cutoutPosY" min="0" max="100" value="50">
+          </div>
+          <div>
+            <label>Mirror</label>
+            <label class="checkbox-wrap">
+              <input type="checkbox" id="cutoutFlipX">
+              <span>Flip X</span>
+            </label>
+          </div>
+          <div>
+            <label>Glow Color</label>
+            <input type="color" id="glowColor" value="#38bdf8">
+          </div>
+          <div>
+            <label>Glow Blur: <span id="glowBlurLabel">25px</span></label>
+            <input type="range" id="glowBlur" min="0" max="60" value="25">
+          </div>
+        </div>
       </div>
+
+      <!-- 4. Text Line 1 -->
+      <div class="card">
+        <div class="card-title">4. Headline (Line 1)</div>
+        <div class="card-grid">
+          <div class="full-width">
+            <label>Text Content</label>
+            <input type="text" id="textLine1" placeholder="Leave empty or type headline...">
+          </div>
+          <div>
+            <label>Size: <span id="fontSizeLabel1">80px</span></label>
+            <input type="range" id="fontSize1" min="30" max="220" value="80">
+          </div>
+          <div>
+            <label>Fill Color</label>
+            <input type="color" id="fillColor1" value="#ffffff">
+          </div>
+          <div>
+            <label>Outline Width: <span id="strokeWidthLabel1">12px</span></label>
+            <input type="range" id="strokeWidth1" min="0" max="40" value="12">
+          </div>
+          <div>
+            <label>Position X%: <span id="posXLabel1">35%</span></label>
+            <input type="range" id="posX1" min="5" max="95" value="35">
+          </div>
+          <div>
+            <label>Position Y%: <span id="posYLabel1">45%</span></label>
+            <input type="range" id="posY1" min="5" max="95" value="45">
+          </div>
+          <div>
+            <label>Angle: <span id="angleLabel1">-4°</span></label>
+            <input type="range" id="angle1" min="-25" max="25" value="-4">
+          </div>
+          <div>
+            <label>Highlight Box</label>
+            <label class="checkbox-wrap">
+              <input type="checkbox" id="badgeToggle1" checked>
+              <span>Enable</span>
+            </label>
+          </div>
+          <div>
+            <label>Box Color</label>
+            <input type="color" id="badgeColor1" value="#dc2626">
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. Text Line 2 -->
+      <div class="card">
+        <div class="card-title">5. Subheader (Line 2)</div>
+        <div class="card-grid">
+          <div class="full-width">
+            <label>Text Content</label>
+            <input type="text" id="textLine2" placeholder="Leave empty or type subheader...">
+          </div>
+          <div>
+            <label>Size: <span id="fontSizeLabel2">105px</span></label>
+            <input type="range" id="fontSize2" min="30" max="220" value="105">
+          </div>
+          <div>
+            <label>Fill Color</label>
+            <input type="color" id="fillColor2" value="#ffeb3b">
+          </div>
+          <div>
+            <label>Outline Width: <span id="strokeWidthLabel2">14px</span></label>
+            <input type="range" id="strokeWidth2" min="0" max="40" value="14">
+          </div>
+          <div>
+            <label>Position X%: <span id="posXLabel2">35%</span></label>
+            <input type="range" id="posX2" min="5" max="95" value="35">
+          </div>
+          <div>
+            <label>Position Y%: <span id="posYLabel2">65%</span></label>
+            <input type="range" id="posY2" min="5" max="95" value="65">
+          </div>
+          <div>
+            <label>Angle: <span id="angleLabel2">-4°</span></label>
+            <input type="range" id="angle2" min="-25" max="25" value="-4">
+          </div>
+          <div>
+            <label>Highlight Box</label>
+            <label class="checkbox-wrap">
+              <input type="checkbox" id="badgeToggle2">
+              <span>Enable</span>
+            </label>
+          </div>
+          <div>
+            <label>Box Color</label>
+            <input type="color" id="badgeColor2" value="#000000">
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- PREVIEW -->
+    <div class="preview-column">
+      <div id="statusBox" class="status-bar">Status: Ready.</div>
+
+      <div class="canvas-container">
+        <canvas id="outputCanvas" width="1280" height="720"></canvas>
+      </div>
+
+      <div class="stats-row">
+        <div>Resolution: <span class="stat-val" id="resVal">1280 × 720</span></div>
+        <div>File Size: <span class="stat-val" id="sizeVal">-</span></div>
+      </div>
+
+      <button class="btn" id="downloadBtn">Download Thumbnail</button>
     </div>
   </div>
-
-  <button class="btn" id="downloadBtn" disabled>Download Clean Optimized Thumbnail</button>
 </div>
 
 <script>
-  const errorBanner = document.getElementById('errorBanner');
-  function showError(msg) {
-    errorBanner.textContent = msg;
-    errorBanner.style.display = 'block';
-  }
-  function clearError() {
-    errorBanner.style.display = 'none';
-  }
+  const statusBox = document.getElementById('statusBox');
+  function log(msg) { statusBox.textContent = `Status: ${msg}`; }
 
-  // DOM References
-  const imageInput = document.getElementById('imageInput');
-  const resPreset = document.getElementById('resPreset');
-  const fitMode = document.getElementById('fitMode');
-  const safeZoneToggle = document.getElementById('safeZoneToggle');
   const canvas = document.getElementById('outputCanvas');
   const ctx = canvas.getContext('2d');
-  const placeholderText = document.getElementById('placeholderText');
-  const statsCard = document.getElementById('statsCard');
-  const srcResVal = document.getElementById('srcResVal');
-  const outResVal = document.getElementById('outResVal');
-  const fileSizeVal = document.getElementById('fileSizeVal');
+  const resPreset = document.getElementById('resPreset');
+  const safeZoneToggle = document.getElementById('safeZoneToggle');
+  const resVal = document.getElementById('resVal');
+  const sizeVal = document.getElementById('sizeVal');
   const downloadBtn = document.getElementById('downloadBtn');
 
-  // Enhancements
+  // Background
+  const imageInput = document.getElementById('imageInput');
+  const bgZoom = document.getElementById('bgZoom');
+  const bgZoomLabel = document.getElementById('bgZoomLabel');
+  const bgPanX = document.getElementById('bgPanX');
+  const bgPanXLabel = document.getElementById('bgPanXLabel');
+  const bgPanY = document.getElementById('bgPanY');
+  const bgPanYLabel = document.getElementById('bgPanYLabel');
+
+  // Filters
   const brightSlider = document.getElementById('brightSlider');
   const brightLabel = document.getElementById('brightLabel');
   const contrastSlider = document.getElementById('contrastSlider');
@@ -266,319 +322,355 @@
   const saturateLabel = document.getElementById('saturateLabel');
   const resetFiltersBtn = document.getElementById('resetFiltersBtn');
 
-  // Line 1
+  // Cutout
+  const cutoutInput = document.getElementById('cutoutInput');
+  const cutoutScale = document.getElementById('cutoutScale');
+  const cutoutScaleLabel = document.getElementById('cutoutScaleLabel');
+  const cutoutPosX = document.getElementById('cutoutPosX');
+  const cutoutPosXLabel = document.getElementById('cutoutPosXLabel');
+  const cutoutPosY = document.getElementById('cutoutPosY');
+  const cutoutPosYLabel = document.getElementById('cutoutPosYLabel');
+  const cutoutFlipX = document.getElementById('cutoutFlipX');
+  const glowColor = document.getElementById('glowColor');
+  const glowBlur = document.getElementById('glowBlur');
+  const glowBlurLabel = document.getElementById('glowBlurLabel');
+  const clearCutoutBtn = document.getElementById('clearCutoutBtn');
+
+  // Text 1
   const textLine1 = document.getElementById('textLine1');
-  const fontFamily1 = document.getElementById('fontFamily1');
   const fontSize1 = document.getElementById('fontSize1');
   const fontSizeLabel1 = document.getElementById('fontSizeLabel1');
   const fillColor1 = document.getElementById('fillColor1');
-  const strokeColor1 = document.getElementById('strokeColor1');
   const strokeWidth1 = document.getElementById('strokeWidth1');
   const strokeWidthLabel1 = document.getElementById('strokeWidthLabel1');
+  const posX1 = document.getElementById('posX1');
+  const posXLabel1 = document.getElementById('posXLabel1');
   const posY1 = document.getElementById('posY1');
   const posYLabel1 = document.getElementById('posYLabel1');
   const angle1 = document.getElementById('angle1');
   const angleLabel1 = document.getElementById('angleLabel1');
   const badgeToggle1 = document.getElementById('badgeToggle1');
   const badgeColor1 = document.getElementById('badgeColor1');
-  const badgePadding1 = document.getElementById('badgePadding1');
-  const badgePadLabel1 = document.getElementById('badgePadLabel1');
 
-  // Line 2
+  // Text 2
   const textLine2 = document.getElementById('textLine2');
-  const fontFamily2 = document.getElementById('fontFamily2');
   const fontSize2 = document.getElementById('fontSize2');
   const fontSizeLabel2 = document.getElementById('fontSizeLabel2');
   const fillColor2 = document.getElementById('fillColor2');
-  const strokeColor2 = document.getElementById('strokeColor2');
   const strokeWidth2 = document.getElementById('strokeWidth2');
   const strokeWidthLabel2 = document.getElementById('strokeWidthLabel2');
+  const posX2 = document.getElementById('posX2');
+  const posXLabel2 = document.getElementById('posXLabel2');
   const posY2 = document.getElementById('posY2');
   const posYLabel2 = document.getElementById('posYLabel2');
   const angle2 = document.getElementById('angle2');
   const angleLabel2 = document.getElementById('angleLabel2');
   const badgeToggle2 = document.getElementById('badgeToggle2');
   const badgeColor2 = document.getElementById('badgeColor2');
-  const badgePadding2 = document.getElementById('badgePadding2');
-  const badgePadLabel2 = document.getElementById('badgePadLabel2');
 
-  let currentImage = null;
-  let currentObjectUrl = null;
+  let bgImage = null;
+  let fgImage = null;
 
-  // Listeners
-  resPreset.addEventListener('change', () => renderCanvas(true));
-  fitMode.addEventListener('change', () => renderCanvas(true));
-  safeZoneToggle.addEventListener('change', () => renderCanvas(true));
+  // File Upload Handlers
+  imageInput.addEventListener('change', function() {
+    if (!this.files || !this.files[0]) return;
+    const file = this.files[0];
+    log(`Reading background: ${file.name}...`);
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        bgImage = img;
+        bgPanX.value = 50;
+        bgPanY.value = 50;
+        bgZoom.value = 100;
+        updateLabels();
+        log(`Background loaded: ${img.naturalWidth}x${img.naturalHeight}px`);
+        renderCanvas(true);
+      };
+      img.onerror = () => log("Could not decode background image.");
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
 
-  brightSlider.addEventListener('input', (e) => { brightLabel.textContent = `${e.target.value}%`; renderCanvas(true); });
-  contrastSlider.addEventListener('input', (e) => { contrastLabel.textContent = `${e.target.value}%`; renderCanvas(true); });
-  saturateSlider.addEventListener('input', (e) => { saturateLabel.textContent = `${e.target.value}%`; renderCanvas(true); });
+  cutoutInput.addEventListener('change', function() {
+    if (!this.files || !this.files[0]) return;
+    const file = this.files[0];
+    log(`Reading cutout: ${file.name}...`);
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        fgImage = img;
+        log(`Cutout loaded: ${img.naturalWidth}x${img.naturalHeight}px`);
+        renderCanvas(true);
+      };
+      img.onerror = () => log("Could not decode cutout image.");
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
 
-  resetFiltersBtn.addEventListener('click', () => {
-    brightSlider.value = 100; brightLabel.textContent = '100%';
-    contrastSlider.value = 100; contrastLabel.textContent = '100%';
-    saturateSlider.value = 100; saturateLabel.textContent = '100%';
+  clearCutoutBtn.addEventListener('click', () => {
+    fgImage = null;
+    cutoutInput.value = '';
+    log("Cutout cleared.");
     renderCanvas(true);
   });
 
-  // Line 1 Listeners
-  textLine1.addEventListener('input', () => renderCanvas(true));
-  fontFamily1.addEventListener('change', () => renderCanvas(true));
-  fillColor1.addEventListener('input', () => renderCanvas(true));
-  strokeColor1.addEventListener('input', () => renderCanvas(true));
-  badgeToggle1.addEventListener('change', () => renderCanvas(true));
-  badgeColor1.addEventListener('input', () => renderCanvas(true));
-  fontSize1.addEventListener('input', (e) => { fontSizeLabel1.textContent = `${e.target.value}px`; renderCanvas(true); });
-  strokeWidth1.addEventListener('input', (e) => { strokeWidthLabel1.textContent = `${e.target.value}px`; renderCanvas(true); });
-  posY1.addEventListener('input', (e) => { posYLabel1.textContent = `${e.target.value}%`; renderCanvas(true); });
-  angle1.addEventListener('input', (e) => { angleLabel1.textContent = `${e.target.value}°`; renderCanvas(true); });
-  badgePadding1.addEventListener('input', (e) => { badgePadLabel1.textContent = `${e.target.value}px`; renderCanvas(true); });
+  // Mouse Drag-To-Pan
+  let isDragging = false;
+  let startX = 0, startY = 0;
 
-  // Line 2 Listeners
-  textLine2.addEventListener('input', () => renderCanvas(true));
-  fontFamily2.addEventListener('change', () => renderCanvas(true));
-  fillColor2.addEventListener('input', () => renderCanvas(true));
-  strokeColor2.addEventListener('input', () => renderCanvas(true));
-  badgeToggle2.addEventListener('change', () => renderCanvas(true));
-  badgeColor2.addEventListener('input', () => renderCanvas(true));
-  fontSize2.addEventListener('input', (e) => { fontSizeLabel2.textContent = `${e.target.value}px`; renderCanvas(true); });
-  strokeWidth2.addEventListener('input', (e) => { strokeWidthLabel2.textContent = `${e.target.value}px`; renderCanvas(true); });
-  posY2.addEventListener('input', (e) => { posYLabel2.textContent = `${e.target.value}%`; renderCanvas(true); });
-  angle2.addEventListener('input', (e) => { angleLabel2.textContent = `${e.target.value}°`; renderCanvas(true); });
-  badgePadding2.addEventListener('input', (e) => { badgePadLabel2.textContent = `${e.target.value}px`; renderCanvas(true); });
-
-  // Highly Reliable Image Loading
-  imageInput.addEventListener('change', (e) => {
-    clearError();
-    const file = e.target.files[0];
-    if (!file) return;
-
-    if (currentObjectUrl) {
-      URL.revokeObjectURL(currentObjectUrl);
-    }
-
-    try {
-      currentObjectUrl = URL.createObjectURL(file);
-      const img = new Image();
-      img.onload = () => {
-        currentImage = img;
-        srcResVal.textContent = `${currentImage.naturalWidth} × ${currentImage.naturalHeight} px`;
-        renderCanvas(true);
-      };
-      img.onerror = () => {
-        showError("The selected file could not be decoded. Please ensure it is a standard PNG, JPG, or WEBP image.");
-      };
-      img.src = currentObjectUrl;
-    } catch (err) {
-      showError("Error reading local image: " + err.message);
-    }
+  canvas.addEventListener('mousedown', (e) => {
+    if (!bgImage) return;
+    isDragging = true;
+    startX = e.clientX;
+    startY = e.clientY;
   });
 
-  // Main Render Pipeline
+  window.addEventListener('mousemove', (e) => {
+    if (!isDragging || !bgImage) return;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    startX = e.clientX;
+    startY = e.clientY;
+
+    let px = parseFloat(bgPanX.value) - (dx * 0.15);
+    let py = parseFloat(bgPanY.value) - (dy * 0.15);
+    bgPanX.value = Math.max(0, Math.min(100, px));
+    bgPanY.value = Math.max(0, Math.min(100, py));
+    updateLabels();
+    renderCanvas(true);
+  });
+
+  window.addEventListener('mouseup', () => { isDragging = false; });
+
+  function updateLabels() {
+    bgZoomLabel.textContent = `${bgZoom.value}%`;
+    bgPanXLabel.textContent = `${Math.round(bgPanX.value)}%`;
+    bgPanYLabel.textContent = `${Math.round(bgPanY.value)}%`;
+    brightLabel.textContent = `${brightSlider.value}%`;
+    contrastLabel.textContent = `${contrastSlider.value}%`;
+    saturateLabel.textContent = `${saturateSlider.value}%`;
+    cutoutScaleLabel.textContent = `${cutoutScale.value}%`;
+    cutoutPosXLabel.textContent = `${cutoutPosX.value}%`;
+    cutoutPosYLabel.textContent = `${cutoutPosY.value}%`;
+    glowBlurLabel.textContent = `${glowBlur.value}px`;
+    fontSizeLabel1.textContent = `${fontSize1.value}px`;
+    strokeWidthLabel1.textContent = `${strokeWidth1.value}px`;
+    posXLabel1.textContent = `${posX1.value}%`;
+    posYLabel1.textContent = `${posY1.value}%`;
+    angleLabel1.textContent = `${angle1.value}°`;
+    fontSizeLabel2.textContent = `${fontSize2.value}px`;
+    strokeWidthLabel2.textContent = `${strokeWidth2.value}px`;
+    posXLabel2.textContent = `${posX2.value}%`;
+    posYLabel2.textContent = `${posY2.value}%`;
+    angleLabel2.textContent = `${angle2.value}°`;
+  }
+
+  const allInputs = [
+    resPreset, safeZoneToggle, bgZoom, bgPanX, bgPanY,
+    brightSlider, contrastSlider, saturateSlider,
+    cutoutScale, cutoutPosX, cutoutPosY, cutoutFlipX, glowColor, glowBlur,
+    textLine1, fontSize1, fillColor1, strokeWidth1, posX1, posY1, angle1, badgeToggle1, badgeColor1,
+    textLine2, fontSize2, fillColor2, strokeWidth2, posX2, posY2, angle2, badgeToggle2, badgeColor2
+  ];
+
+  allInputs.forEach(input => {
+    input.addEventListener('input', () => { updateLabels(); renderCanvas(true); });
+    input.addEventListener('change', () => { updateLabels(); renderCanvas(true); });
+  });
+
+  resetFiltersBtn.addEventListener('click', () => {
+    brightSlider.value = 100; contrastSlider.value = 100; saturateSlider.value = 100;
+    updateLabels();
+    renderCanvas(true);
+  });
+
+  // Master Render Engine (Guaranteed Safe Coordinate Clamping)
   function renderCanvas(includeGuide = true) {
-    if (!currentImage) return;
+    const [w, h] = resPreset.value.split('x').map(Number);
+    canvas.width = w;
+    canvas.height = h;
+    resVal.textContent = `${w} × ${h}`;
 
-    try {
-      const [targetWidth, targetHeight] = resPreset.value.split('x').map(Number);
-      canvas.width = targetWidth;
-      canvas.height = targetHeight;
+    // 1. Draw Canvas Background
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(0, 0, w, h);
 
-      ctx.filter = 'none';
-      ctx.fillStyle = '#000000';
-      ctx.fillRect(0, 0, targetWidth, targetHeight);
+    // 2. Draw Background Image with Bulletproof Bounds
+    if (bgImage && bgImage.complete && bgImage.naturalWidth > 0 && bgImage.naturalHeight > 0) {
+      try {
+        ctx.save();
+        ctx.filter = `brightness(${brightSlider.value}%) contrast(${contrastSlider.value}%) saturate(${saturateSlider.value}%)`;
 
-      // 1. Draw Filtered Image
-      ctx.save();
-      ctx.filter = `brightness(${brightSlider.value}%) contrast(${contrastSlider.value}%) saturate(${saturateSlider.value}%)`;
+        const imgW = bgImage.naturalWidth;
+        const imgH = bgImage.naturalHeight;
+        const targetAspect = w / h;
+        const imgAspect = imgW / imgH;
 
-      const mode = fitMode.value;
-      const imgW = currentImage.naturalWidth;
-      const imgH = currentImage.naturalHeight;
+        let baseCropW, baseCropH;
+        if (imgAspect > targetAspect) {
+          baseCropH = imgH;
+          baseCropW = imgH * targetAspect;
+        } else {
+          baseCropW = imgW;
+          baseCropH = imgW / targetAspect;
+        }
 
-      if (mode === 'stretch') {
-        ctx.drawImage(currentImage, 0, 0, targetWidth, targetHeight);
-      } else if (mode === 'contain') {
-        const scale = Math.min(targetWidth / imgW, targetHeight / imgH);
-        const renderW = imgW * scale;
-        const renderH = imgH * scale;
-        ctx.drawImage(currentImage, (targetWidth - renderW) / 2, (targetHeight - renderH) / 2, renderW, renderH);
-      } else if (mode === 'cover') {
-        const scale = Math.max(targetWidth / imgW, targetHeight / imgH);
-        const renderW = imgW * scale;
-        const renderH = imgH * scale;
-        ctx.drawImage(currentImage, (targetWidth - renderW) / 2, (targetHeight - renderH) / 2, renderW, renderH);
+        const zoom = Math.max(1, parseFloat(bgZoom.value) / 100);
+        let cropW = Math.floor(baseCropW / zoom);
+        let cropH = Math.floor(baseCropH / zoom);
+
+        // Clamping to ensure parameters never exceed physical image dimensions
+        cropW = Math.min(imgW, Math.max(10, cropW));
+        cropH = Math.min(imgH, Math.max(10, cropH));
+
+        const maxPanX = Math.max(0, imgW - cropW);
+        const maxPanY = Math.max(0, imgH - cropH);
+
+        let cropX = Math.floor(maxPanX * (parseFloat(bgPanX.value) / 100));
+        let cropY = Math.floor(maxPanY * (parseFloat(bgPanY.value) / 100));
+
+        // Hard boundary protection against IndexSizeError
+        if (cropX + cropW > imgW) cropX = imgW - cropW;
+        if (cropY + cropH > imgH) cropY = imgH - cropH;
+        if (cropX < 0) cropX = 0;
+        if (cropY < 0) cropY = 0;
+
+        ctx.drawImage(bgImage, cropX, cropY, cropW, cropH, 0, 0, w, h);
+        ctx.restore();
+      } catch (err) {
+        log(`Background draw warning: ${err.message}`);
+        // Fallback: draw directly without crop if any math anomaly occurs
+        ctx.drawImage(bgImage, 0, 0, w, h);
       }
-      ctx.restore();
-
-      // 2. Draw Text Layers
-      const scaleMult = targetWidth / 1280;
-
-      drawTextLayer({
-        text: textLine1.value.trim(),
-        fontFamily: fontFamily1.value,
-        fontSize: parseFloat(fontSize1.value) * scaleMult,
-        strokeWidth: parseFloat(strokeWidth1.value) * scaleMult,
-        fillColor: fillColor1.value,
-        strokeColor: strokeColor1.value,
-        posYPercent: parseFloat(posY1.value),
-        angleDeg: parseFloat(angle1.value),
-        hasBadge: badgeToggle1.checked,
-        badgeColor: badgeColor1.value,
-        badgePad: parseFloat(badgePadding1.value) * scaleMult,
-        targetWidth,
-        targetHeight,
-        scaleMult
-      });
-
-      drawTextLayer({
-        text: textLine2.value.trim(),
-        fontFamily: fontFamily2.value,
-        fontSize: parseFloat(fontSize2.value) * scaleMult,
-        strokeWidth: parseFloat(strokeWidth2.value) * scaleMult,
-        fillColor: fillColor2.value,
-        strokeColor: strokeColor2.value,
-        posYPercent: parseFloat(posY2.value),
-        angleDeg: parseFloat(angle2.value),
-        hasBadge: badgeToggle2.checked,
-        badgeColor: badgeColor2.value,
-        badgePad: parseFloat(badgePadding2.value) * scaleMult,
-        targetWidth,
-        targetHeight,
-        scaleMult
-      });
-
-      // 3. YouTube UI Safe-Zone Guide
-      if (includeGuide && safeZoneToggle.checked) {
-        drawYouTubeGuide(targetWidth, targetHeight);
-      }
-
-      // UI Displays
-      canvas.style.display = 'inline-block';
-      placeholderText.style.display = 'none';
-      statsCard.style.display = 'block';
-      downloadBtn.disabled = false;
-
-      verifyOutput(targetWidth, targetHeight);
-    } catch (renderErr) {
-      showError("Rendering error: " + renderErr.message);
-    }
-  }
-
-  // Draw Individual Text Layer
-  function drawTextLayer(cfg) {
-    if (!cfg.text || cfg.text.length === 0) return;
-
-    ctx.save();
-    const posX = cfg.targetWidth / 2;
-    const posY = (cfg.targetHeight * cfg.posYPercent) / 100;
-
-    ctx.translate(posX, posY);
-    ctx.rotate((cfg.angleDeg * Math.PI) / 180);
-
-    ctx.font = `900 ${cfg.fontSize}px ${cfg.fontFamily}`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-
-    // Draw Badge
-    if (cfg.hasBadge) {
-      const metrics = ctx.measureText(cfg.text);
-      const textWidth = metrics.width;
-      const ascent = metrics.actualBoundingBoxAscent || (cfg.fontSize * 0.75);
-      const descent = metrics.actualBoundingBoxDescent || (cfg.fontSize * 0.1);
-      const textHeight = ascent + descent;
-
-      const boxW = textWidth + (cfg.badgePad * 2);
-      const boxH = textHeight + (cfg.badgePad * 2);
-      const boxX = -(boxW / 2);
-      const boxY = (0 - (ascent / 2) + (descent / 2)) - (boxH / 2);
-      const cornerRadius = 8 * cfg.scaleMult;
-
-      ctx.fillStyle = cfg.badgeColor;
-      ctx.beginPath();
-      if (typeof ctx.roundRect === 'function') {
-        ctx.roundRect(boxX, boxY, boxW, boxH, cornerRadius);
-      } else {
-        ctx.rect(boxX, boxY, boxW, boxH);
-      }
-      ctx.fill();
-    }
-
-    // Outline
-    ctx.lineJoin = 'round';
-    ctx.miterLimit = 2;
-    if (cfg.strokeWidth > 0) {
-      ctx.strokeStyle = cfg.strokeColor;
-      ctx.lineWidth = cfg.strokeWidth;
-      ctx.strokeText(cfg.text, 0, 0);
-    }
-
-    // Fill
-    ctx.fillStyle = cfg.fillColor;
-    ctx.fillText(cfg.text, 0, 0);
-
-    ctx.restore();
-  }
-
-  // Safe-Zone Guide
-  function drawYouTubeGuide(w, h) {
-    const scaleMult = w / 1280;
-    const stampW = 92 * scaleMult;
-    const stampH = 34 * scaleMult;
-    const stampX = w - stampW - (20 * scaleMult);
-    const stampY = h - stampH - (20 * scaleMult);
-
-    ctx.save();
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
-    ctx.beginPath();
-    if (typeof ctx.roundRect === 'function') {
-      ctx.roundRect(stampX, stampY, stampW, stampH, 4 * scaleMult);
     } else {
-      ctx.rect(stampX, stampY, stampW, stampH);
+      ctx.fillStyle = '#1e293b';
+      ctx.fillRect(0, 0, w, h);
+      ctx.fillStyle = '#475569';
+      ctx.font = `bold 28px sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('SELECT A BACKGROUND IMAGE', w / 2, h / 2);
     }
-    ctx.fill();
 
-    ctx.font = `700 ${18 * scaleMult}px -apple-system, Roboto, sans-serif`;
-    ctx.fillStyle = '#ffffff';
+    // 3. Draw Cutout Subject
+    if (fgImage && fgImage.complete && fgImage.naturalWidth > 0 && fgImage.naturalHeight > 0) {
+      try {
+        ctx.save();
+        const sFactor = (parseFloat(cutoutScale.value) / 100) * (h / fgImage.naturalHeight);
+        const cw = Math.max(1, Math.round(fgImage.naturalWidth * sFactor));
+        const ch = Math.max(1, Math.round(fgImage.naturalHeight * sFactor));
+        const cx = (w * parseFloat(cutoutPosX.value)) / 100;
+        const cy = (h * parseFloat(cutoutPosY.value)) / 100;
+
+        ctx.translate(cx, cy);
+        if (cutoutFlipX.checked) ctx.scale(-1, 1);
+
+        const blur = parseFloat(glowBlur.value);
+        if (blur > 0) {
+          ctx.save();
+          ctx.shadowColor = glowColor.value;
+          ctx.shadowBlur = blur * (w / 1280);
+          ctx.drawImage(fgImage, -cw / 2, -ch / 2, cw, ch);
+          ctx.restore();
+        }
+        ctx.drawImage(fgImage, -cw / 2, -ch / 2, cw, ch);
+        ctx.restore();
+      } catch (fgErr) {
+        log(`Cutout warning: ${fgErr.message}`);
+      }
+    }
+
+    // 4. Draw Headlines
+    const scale = w / 1280;
+    if (textLine1.value.trim().length > 0) {
+      drawText(textLine1.value.trim(), fontSize1.value, strokeWidth1.value, fillColor1.value, posX1.value, posY1.value, angle1.value, badgeToggle1.checked, badgeColor1.value, scale, w, h);
+    }
+    if (textLine2.value.trim().length > 0) {
+      drawText(textLine2.value.trim(), fontSize2.value, strokeWidth2.value, fillColor2.value, posX2.value, posY2.value, angle2.value, badgeToggle2.checked, badgeColor2.value, scale, w, h);
+    }
+
+    // 5. Safe-Zone UI Guide
+    if (includeGuide && safeZoneToggle.checked) {
+      drawGuide(w, h);
+    }
+
+    // 6. Update File Size Safely
+    try {
+      canvas.toBlob((blob) => {
+        if (blob) sizeVal.textContent = `${(blob.size / 1024).toFixed(1)} KB`;
+      }, 'image/jpeg', 0.90);
+    } catch (bErr) {
+      sizeVal.textContent = "N/A";
+    }
+  }
+
+  function drawText(text, size, stroke, color, px, py, angle, badge, badgeCol, scale, w, h) {
+    ctx.save();
+    const finalSize = parseFloat(size) * scale;
+    const finalStroke = parseFloat(stroke) * scale;
+    const x = (w * parseFloat(px)) / 100;
+    const y = (h * parseFloat(py)) / 100;
+
+    ctx.translate(x, y);
+    ctx.rotate((parseFloat(angle) * Math.PI) / 180);
+    ctx.font = `900 ${finalSize}px Impact, -apple-system, sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText('12:45', stampX + (stampW / 2), stampY + (stampH / 2) + (1 * scaleMult));
 
-    ctx.strokeStyle = 'rgba(56, 189, 248, 0.45)';
-    ctx.lineWidth = 2 * scaleMult;
-    ctx.setLineDash([8 * scaleMult, 6 * scaleMult]);
-    ctx.strokeRect(20 * scaleMult, 20 * scaleMult, w - (40 * scaleMult), h - (40 * scaleMult));
+    const pad = 14 * scale;
+    if (badge) {
+      const tw = ctx.measureText(text).width;
+      const th = finalSize * 0.9;
+      ctx.fillStyle = badgeCol;
+      ctx.fillRect(-tw / 2 - pad, -th / 2 - pad * 0.7, tw + pad * 2, th + pad * 1.4);
+    }
 
+    if (finalStroke > 0) {
+      ctx.strokeStyle = '#000000';
+      ctx.lineWidth = finalStroke;
+      ctx.lineJoin = 'round';
+      ctx.strokeText(text, 0, 0);
+    }
+
+    ctx.fillStyle = color;
+    ctx.fillText(text, 0, 0);
     ctx.restore();
   }
 
-  // Verification & File Size
-  function verifyOutput(targetWidth, targetHeight) {
-    canvas.toBlob((blob) => {
-      if (!blob) return;
-      const sizeKB = (blob.size / 1024).toFixed(1);
-      const sizeMB = (blob.size / (1024 * 1024)).toFixed(2);
-      fileSizeVal.textContent = blob.size > 1024 * 1024 ? `${sizeMB} MB` : `${sizeKB} KB`;
+  function drawGuide(w, h) {
+    const s = w / 1280;
+    ctx.save();
+    ctx.fillStyle = 'rgba(0,0,0,0.85)';
+    ctx.fillRect(w - (105 * s), h - (46 * s), 90 * s, 32 * s);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = `bold ${16 * s}px sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('12:45', w - (60 * s), h - (30 * s));
 
-      const testImg = new Image();
-      const testUrl = URL.createObjectURL(blob);
-      testImg.onload = () => {
-        outResVal.textContent = `${testImg.width} × ${testImg.height} px`;
-        URL.revokeObjectURL(testUrl);
-      };
-      testImg.src = testUrl;
-    }, 'image/jpeg', 0.90);
+    ctx.strokeStyle = 'rgba(56, 189, 248, 0.4)';
+    ctx.lineWidth = 2 * s;
+    ctx.setLineDash([8 * s, 6 * s]);
+    ctx.strokeRect(20 * s, 20 * s, w - 40 * s, h - 40 * s);
+    ctx.restore();
   }
 
-  // Download Output
   downloadBtn.addEventListener('click', () => {
     renderCanvas(false);
-    const [w, h] = resPreset.value.split('x');
     const link = document.createElement('a');
-    link.download = `thumbnail_${w}x${h}.jpg`;
+    link.download = `thumbnail_${canvas.width}x${canvas.height}.jpg`;
     link.href = canvas.toDataURL('image/jpeg', 0.90);
     link.click();
     renderCanvas(true);
   });
+
+  // Render instantly on page open
+  renderCanvas(true);
 </script>
 </body>
 </html>
